@@ -1,5 +1,5 @@
 import express from "express";
-import { client } from "../index.js";
+import { getMovies, getMovieById, createMovies, deleteMovieById, updateMovieById } from "../services/movies.service.js";
 
 const router = express.Router();
 //localhost:4000/movies
@@ -8,7 +8,7 @@ router.get("/", async function (request, response) {
     if (request.query.rating) {
         request.query.rating = +request.query.rating;
     }
-    const movies = await client.db("youtubedb").collection("movies").find(request.query).toArray();
+    const movies = await getMovies(request);
     console.log(movies);
     console.log(request.query);
     response.send(movies);
@@ -24,7 +24,7 @@ router.get("/", async function (request, response) {
 
 router.get("/:id", async function (request, response) {
     const { id } = request.params;
-    const movie = await client.db("youtubedb").collection("movies").findOne({ id: id });
+    const movie = await getMovieById(id);
     console.log(movie);
     movie ? response.send(movie) : response.status(404).send({ message: "Movie not found" });
 });
@@ -32,7 +32,7 @@ router.get("/:id", async function (request, response) {
 router.post("/", async function (request, response) {
     const data = request.body;
     console.log(data);
-    const result = await client.db("youtubedb").collection("movies").insertMany(data);
+    const result = await createMovies(data);
     response.send(movies);
 });
 
@@ -40,7 +40,7 @@ router.post("/", async function (request, response) {
 router.delete("/:id", async function (request, response) {
     const { id } = request.params;
     //db.movies.deleteOne({id:id})
-    const result = await client.db("youtubedb").collection("movies").deleteOne({ id: id });
+    const result = await deleteMovieById(id);
     console.log(result);
     result.deletedCount > 0
         ? response.send({ message: "Movie Deleted Successfully!" })
@@ -52,7 +52,7 @@ router.put("/:id", async function (request, response) {
     const { id } = request.params;
     const data = request.body;
     //db.movies.updateOne({id:id},{$set:{rating:9}})
-    const result = await client.db("youtubedb").collection("movies").updateOne({ id: id }, { $set: data });
+    const result = await updateMovieById(id, data);
     console.log(result);
     result
         ? response.send({ message: "Movie Updated Successfully!" })
@@ -70,3 +70,4 @@ router.put("/:id", async function (request, response) {
 // });
 
 export default router;
+
